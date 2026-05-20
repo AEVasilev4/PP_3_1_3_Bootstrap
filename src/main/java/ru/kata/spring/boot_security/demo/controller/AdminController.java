@@ -10,7 +10,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin")
@@ -24,6 +26,7 @@ public class AdminController {
         this.userService = userService;
         this.roleService = roleService;
     }
+    // Добавьте в AdminController.java или создайте новый ApiController
 
     @GetMapping
     public String showAdminPage(Model model) {
@@ -71,4 +74,18 @@ public class AdminController {
         return "redirect:/admin";
     }
 
+    @GetMapping("/api/users")
+    @ResponseBody
+    public List<User> getAllUsersAPI() {
+        return userService.getAllUsers().stream()
+                .filter(user -> {
+                    boolean hasUserRole = user.getRoles().stream()
+                            .anyMatch(role -> role.getName().contains("USER"));
+                    boolean hasAdminRole = user.getRoles().stream()
+                            .anyMatch(role -> role.getName().contains("ADMIN"));
+
+                    return hasUserRole && !hasAdminRole;
+                })
+                .collect(Collectors.toList());
+    }
 }
