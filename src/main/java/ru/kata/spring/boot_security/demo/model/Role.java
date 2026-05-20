@@ -1,6 +1,7 @@
 package ru.kata.spring.boot_security.demo.model;
 
 import org.springframework.security.core.GrantedAuthority;
+
 import javax.persistence.*;
 
 @Entity
@@ -14,16 +15,29 @@ public class Role implements GrantedAuthority {
     @Column(nullable = false, unique = true)
     private String name;
 
-    public Role() {}
+    public Role() {
+    }
 
     public Role(String name) {
-        this.name = name;   }
+        this.name = name;
+    }
 
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
 
     @Override
@@ -33,6 +47,7 @@ public class Role implements GrantedAuthority {
         return name.startsWith("ROLE_") ? name.toUpperCase() : "ROLE_" + name.toUpperCase();
 
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -45,6 +60,7 @@ public class Role implements GrantedAuthority {
     public int hashCode() {
         return getClass().hashCode();
     }
+
     @Override
     public String toString() {
         return "Role{id=" + id + ", name='" + name + "'}";

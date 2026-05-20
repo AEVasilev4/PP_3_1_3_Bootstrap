@@ -2,7 +2,9 @@ package ru.kata.spring.boot_security.demo.controller;
 
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
+import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -15,29 +17,32 @@ import java.util.Set;
 public class AdminController {
 
     private final UserService userService;
+    private final RoleService roleService;
 
-
-    public AdminController(UserService userService) {
+    @Autowired
+    public AdminController(UserService userService, RoleService roleService) {
         this.userService = userService;
+        this.roleService = roleService;
     }
 
     @GetMapping
     public String showAdminPage(Model model) {
         model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("allRoles", roleService.getAllRoles());
         return "admin";
     }
 
     @GetMapping("/new")
     public String showNewUserForm(Model model) {
         model.addAttribute("user", new User());
-        model.addAttribute("allRoles", userService.getAllRoles());
+        model.addAttribute("allRoles", roleService.getAllRoles());
         return "user-form";
     }
 
     @GetMapping("/edit/{id}")
     public String showEditUserForm(@PathVariable Long id, Model model) {
         model.addAttribute("user", userService.getUserById(id));
-        model.addAttribute("allRoles", userService.getAllRoles());
+        model.addAttribute("allRoles", roleService.getAllRoles());
         return "user-form";
     }
 

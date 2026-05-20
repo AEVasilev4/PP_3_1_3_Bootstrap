@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,17 +21,21 @@ public class UserServiceImpl implements UserService {
 
     private final UserDao userDao;
     private final PasswordEncoder passwordEncoder;
+    private final RoleService roleService;
+
 
     @Autowired
-    public UserServiceImpl(UserDao userDao, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserDao userDao, PasswordEncoder passwordEncoder, RoleService roleService) {
         this.userDao = userDao;
         this.passwordEncoder = passwordEncoder;
+        this.roleService = roleService;
     }
 
     @Override
     public List<User> getAllUsers() {
         return userDao.getAllUsers();
     }
+
     @Override
     public User getUserById(Long id) {
         return userDao.getUserById(id);
@@ -43,24 +48,28 @@ public class UserServiceImpl implements UserService {
         user.setRoles(roles != null ? roles : new HashSet<>());
         userDao.saveUser(user);
     }
+
     @Override
     @Transactional
     public void updateUser(User user, Set<Role> roles) {
         User existingUser = userDao.getUserById(user.getId());
-        if (existingUser != null) {
-            existingUser.setUsername(user.getUsername());
-            existingUser.setName(user.getName());
-            existingUser.setEmail(user.getEmail());
-            existingUser.setAge(user.getAge());
-
-            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-                existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
-            }
-
-            existingUser.setRoles(roles != null ? roles : new HashSet<>());
-            userDao.updateUser(existingUser);
+        if (existingUser == null) {
+            throw new IllegalArgumentException("User not found with id: " + user.getId());
         }
+        existingUser.setUsername(user.getUsername());
+        existingUser.setName(user.getName());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setAge(user.getAge());
+
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+
+        existingUser.setRoles(roles != null ? roles : new HashSet<>());
+        userDao.updateUser(existingUser);
+
     }
+
     @Override
     @Transactional
     public void deleteUser(Long id) {
@@ -79,21 +88,19 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+
     @Override
-    public List<Role> getAllRoles() {
-        return userDao.getAllRoles();
-    }
-    @Override
-    @Transactional(readOnly = true)
+
     public User findByUsername(String username) {
         return userDao.getUserByUsername(username);
     }
-
     @Override
     public Set<Role> getRolesByIds(List<Long> ids) {
-        return userDao.getRolesByIds(ids);
+        return roleService.getRolesByIds(ids);
     }
-
-
-
 }
+
+
+
+
+
