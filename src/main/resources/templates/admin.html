@@ -56,12 +56,12 @@
 <nav class="navbar navbar-dark navbar-custom">
     <div class="container-fluid">
         <span class="navbar-brand mb-0 h1">
-            <!-- Безопасное получение имени пользователя -->
+
             <span th:if="${#authentication != null and #authentication.name != null}"
                   th:text="${#authentication.name}">username</span>
             <span th:unless="${#authentication != null}" th:text="'Guest'">Guest</span>
 
-            <!-- Безопасное получение ролей -->
+
             <span th:if="${#authentication != null}"> with roles:
                 <span th:each="auth, iterStat : ${#authentication.authorities}">
                     <span th:text="${auth.getAuthority().replace('ROLE_', '')}"></span>
@@ -296,7 +296,7 @@
         document.getElementById('editEmail').value = user.email;
         document.getElementById('editPassword').value = '';
 
-        // Обновляем action формы
+
         document.getElementById('editForm').action = '/admin/update';
 
         new bootstrap.Modal(document.getElementById('editModal')).show();
@@ -314,7 +314,7 @@
         document.getElementById('deleteAge').value = user.age;
         document.getElementById('deleteEmail').value = user.email;
 
-        // Обновляем action формы
+
         document.getElementById('deleteForm').action = '/admin/delete/' + user.id;
 
         new bootstrap.Modal(document.getElementById('deleteModal')).show();

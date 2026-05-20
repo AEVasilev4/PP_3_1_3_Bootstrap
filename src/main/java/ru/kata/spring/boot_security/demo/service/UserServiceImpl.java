@@ -80,10 +80,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userDao.getUserByUsername(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userDao.getUserByEmail(email);
         if (user == null) {
-            throw new UsernameNotFoundException("User not found: " + username);
+            throw new UsernameNotFoundException("User not found with email: " + email);
         }
         return user;
     }
@@ -94,6 +94,7 @@ public class UserServiceImpl implements UserService {
     public User findByUsername(String username) {
         return userDao.getUserByUsername(username);
     }
+
     @Override
     public Set<Role> getRolesByIds(List<Long> ids) {
         return roleService.getRolesByIds(ids);

@@ -74,18 +74,5 @@ public class AdminController {
         return "redirect:/admin";
     }
 
-    @GetMapping("/api/users")
-    @ResponseBody
-    public List<User> getAllUsersAPI() {
-        return userService.getAllUsers().stream()
-                .filter(user -> {
-                    boolean hasUserRole = user.getRoles().stream()
-                            .anyMatch(role -> role.getName().contains("USER"));
-                    boolean hasAdminRole = user.getRoles().stream()
-                            .anyMatch(role -> role.getName().contains("ADMIN"));
 
-                    return hasUserRole && !hasAdminRole;
-                })
-                .collect(Collectors.toList());
-    }
 }
