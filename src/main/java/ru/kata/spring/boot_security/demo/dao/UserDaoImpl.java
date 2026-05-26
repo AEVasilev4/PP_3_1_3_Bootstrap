@@ -8,6 +8,7 @@ import javax.persistence.PersistenceContext;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 
 @Repository
@@ -25,23 +26,18 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public User getUserById(Long id) {
-        return entityManager.createQuery(
-                        "SELECT u FROM User u JOIN FETCH u.roles WHERE u.id = :id", User.class)
-                .setParameter("id", id)
-                .getResultList()
-                .stream()
-                .findFirst()
-                .orElse(null);
+    public Optional<User> getUserById(Long id) {
+        return Optional.ofNullable(entityManager.find(User.class, id));
     }
 
     @Override
-    public User getUserByUsername(String username) {
+    public Optional<User> getUserByUsername(String username) {
         return entityManager.createQuery(
-                        "SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.roles WHERE u.username = :username",
-                        User.class)
+                        "SELECT u FROM User u JOIN FETCH u.roles WHERE u.username = :username", User.class)
                 .setParameter("username", username)
-                .getSingleResult();
+                .getResultList()
+                .stream()
+                .findFirst();
     }
 
 
@@ -61,12 +57,5 @@ public class UserDaoImpl implements UserDao {
         entityManager.remove(user);
     }
 
-    @Override
-    public User getUserByEmail(String email) {
-        return entityManager.createQuery(
-                        "SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.roles WHERE u.email = :email",
-                        User.class)
-                .setParameter("email", email)
-                .getSingleResult();
-    }
+
 }

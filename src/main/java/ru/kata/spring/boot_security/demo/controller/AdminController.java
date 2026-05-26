@@ -1,6 +1,5 @@
 package ru.kata.spring.boot_security.demo.controller;
 
-import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
@@ -9,10 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+
 
 @Controller
 @RequestMapping("/admin")
@@ -26,12 +22,10 @@ public class AdminController {
         this.userService = userService;
         this.roleService = roleService;
     }
-    // Добавьте в AdminController.java или создайте новый ApiController
 
     @GetMapping
     public String showAdminPage(Model model) {
         model.addAttribute("users", userService.getAllUsers());
-        model.addAttribute("allRoles", roleService.getAllRoles());
         return "admin";
     }
 
@@ -44,16 +38,19 @@ public class AdminController {
 
     @GetMapping("/edit/{id}")
     public String showEditUserForm(@PathVariable Long id, Model model) {
-        model.addAttribute("user", userService.getUserById(id));
+        User user = userService.getUserById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));// данная адаптация для user-form допустима? она не относится к бизнес-логике(CRUD)?
+        model.addAttribute("user", user);
         model.addAttribute("allRoles", roleService.getAllRoles());
+
         return "user-form";
     }
 
     @PostMapping
     public String saveUser(@ModelAttribute User user,
                            @RequestParam(name = "roles", required = false) Long[] roleIds) {
-        Set<Role> roles = roleIds != null ? userService.getRolesByIds(Arrays.asList(roleIds)) : Set.of();
-        userService.saveUser(user, roles);
+
+        userService.saveUser(user, roleIds);
 
         return "redirect:/admin";
     }
@@ -62,8 +59,8 @@ public class AdminController {
     @PostMapping("/update")
     public String updateUser(@ModelAttribute("user") User user,
                              @RequestParam(name = "roles", required = false) Long[] roleIds) {
-        Set<Role> roles = roleIds != null ? userService.getRolesByIds(Arrays.asList(roleIds)) : Set.of();
-        userService.updateUser(user, roles);
+
+        userService.updateUser(user, roleIds);
 
         return "redirect:/admin";
     }
@@ -73,6 +70,5 @@ public class AdminController {
         userService.deleteUser(id);
         return "redirect:/admin";
     }
-
 
 }

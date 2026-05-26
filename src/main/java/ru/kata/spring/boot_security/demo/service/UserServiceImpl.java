@@ -1,5 +1,6 @@
 package ru.kata.spring.boot_security.demo.service;
 
+
 import ru.kata.spring.boot_security.demo.dao.UserDao;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
@@ -10,9 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 @Service
@@ -22,7 +21,6 @@ public class UserServiceImpl implements UserService {
     private final UserDao userDao;
     private final PasswordEncoder passwordEncoder;
     private final RoleService roleService;
-
 
     @Autowired
     public UserServiceImpl(UserDao userDao, PasswordEncoder passwordEncoder, RoleService roleService) {
@@ -37,69 +35,76 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserById(Long id) {
+    public Optional<User> getUserById(Long id) {
         return userDao.getUserById(id);
     }
 
     @Override
     @Transactional
-    public void saveUser(User user, Set<Role> roles) {
+    public void saveUser(User user, Long[] roleIds) {
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(roles != null ? roles : new HashSet<>());
+
+
+        Set<Role> roles = (roleIds != null && roleIds.length > 0)
+                ? roleService.getRolesByIds(Arrays.asList(roleIds))
+                : new HashSet<>();
+
+        user.setRoles(roles);
         userDao.saveUser(user);
     }
 
     @Override
     @Transactional
-    public void updateUser(User user, Set<Role> roles) {
-        User existingUser = userDao.getUserById(user.getId());
-        if (existingUser == null) {
+    public void updateUser(User user, Long[] roleIds) {
+
+        Optional<User> existingUserOpt = userDao.getUserById(user.getId());
+
+
+        if (existingUserOpt.isEmpty()) {
             throw new IllegalArgumentException("User not found with id: " + user.getId());
         }
+
+        User existingUser = existingUserOpt.get();
         existingUser.setUsername(user.getUsername());
         existingUser.setName(user.getName());
         existingUser.setEmail(user.getEmail());
         existingUser.setAge(user.getAge());
 
+
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
         }
 
-        existingUser.setRoles(roles != null ? roles : new HashSet<>());
-        userDao.updateUser(existingUser);
+        Set<Role> roles = (roleIds != null && roleIds.length > 0)
+                ? roleService.getRolesByIds(Arrays.asList(roleIds))
+                : new HashSet<>();
 
+        existingUser.setRoles(roles);
+        userDao.updateUser(existingUser);
     }
 
     @Override
     @Transactional
     public void deleteUser(Long id) {
-        User user = userDao.getUserById(id);
-        if (user != null) {
-            userDao.deleteUser(user);
-        }
+
+        Optional<User> userOpt = userDao.getUserById(id);
+        userOpt.ifPresent(userDao::deleteUser);
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userDao.getUserByEmail(email);
-        if (user == null) {
-            throw new UsernameNotFoundException("User not found with email: " + email);
-        }
-        return user;
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userDao.getUserByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
     }
 
-
     @Override
-
     public User findByUsername(String username) {
-        return userDao.getUserByUsername(username);
-    }
-
-    @Override
-    public Set<Role> getRolesByIds(List<Long> ids) {
-        return roleService.getRolesByIds(ids);
+        return userDao.getUserByUsername(username)
+                .orElse(null);
     }
 }
+
 
 
 

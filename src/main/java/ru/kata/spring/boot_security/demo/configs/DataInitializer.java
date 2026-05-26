@@ -34,8 +34,8 @@ public class DataInitializer implements CommandLineRunner {
             roleDao.saveRole(new Role("USER"));
         }
 
-        // 🔹 2. Создаём админа, если нет (используем UserDao)
-        if (userDao.getUserByUsername("admin") == null) {
+
+        if (userDao.getUserByUsername("admin").isEmpty()) {
             List<Role> roles = roleDao.getAllRoles();
             Role adminRole = roles.stream()
                     .filter(r -> "ADMIN".equals(r.getName()))
@@ -56,7 +56,7 @@ public class DataInitializer implements CommandLineRunner {
         }
 
 
-        if (userDao.getUserByUsername("user") == null) {
+        if (userDao.getUserByUsername("user").isEmpty()) {
             List<Role> roles = roleDao.getAllRoles();
             Role userRole = roles.stream()
                     .filter(r -> "USER".equals(r.getName()))
