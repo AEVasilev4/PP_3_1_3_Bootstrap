@@ -4,6 +4,7 @@ import ru.kata.spring.boot_security.demo.model.User;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 
 import javax.transaction.Transactional;
@@ -32,12 +33,15 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public Optional<User> getUserByUsername(String username) {
-        return entityManager.createQuery(
-                        "SELECT u FROM User u JOIN FETCH u.roles WHERE u.username = :username", User.class)
-                .setParameter("username", username)
-                .getResultList()
-                .stream()
-                .findFirst();
+        try {
+            return Optional.ofNullable(entityManager.createQuery(
+                            "SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.roles WHERE u.username = :username",
+                            User.class)
+                    .setParameter("username", username)
+                    .getSingleResult());
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
     }
 
 
@@ -57,5 +61,16 @@ public class UserDaoImpl implements UserDao {
         entityManager.remove(user);
     }
 
+    public User getUserByEmail(String email) {
+        try {
+            return entityManager.createQuery(
+                            "SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.roles WHERE u.email = :email",
+                            User.class)
+                    .setParameter("email", email)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
 
+    }
 }

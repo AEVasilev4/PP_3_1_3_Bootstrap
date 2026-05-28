@@ -92,16 +92,17 @@ public class UserServiceImpl implements UserService {
         userOpt.ifPresent(userDao::deleteUser);
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userDao.getUserByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
-    }
+
 
     @Override
     public User findByUsername(String username) {
         return userDao.getUserByUsername(username)
                 .orElse(null);
+    }
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return Optional.ofNullable(userDao.getUserByEmail(email))
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
     }
 }
 
